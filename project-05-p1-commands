@@ -1,0 +1,47 @@
+# Phase 1: Core Global Network Foundations
+
+### Project Description:
+Enterprise-grade, zero-trust GCP architecture spanning two regions with automated failover. Features isolated private custom subnets utilizing Private Google Access, strict ingress firewall profiles, automated Managed Instance Groups with Apache webservers, and continuous HTTP routing health checks.
+
+### Steps Executed:
+
+1. **Set Project Context**
+   Explicitly bind the active terminal session to the targeted project context to prevent accidental resource routing across multi-project environments.
+
+2. **Global Network Initialization**
+   Initialize a blank virtual network canvas spanning Google's entire global fiber infrastructure. Custom subnetting mode is forced to disable default automated range pooling.
+
+3. **Provision Isolated Regional Subnets**
+   Deploy two distinct multi-tier IP subnets across separate geographic regions. The `--enable-private-ip-google-access` flag is explicitly set so internal compute blocks can securely pull updates via Google APIs without assigning public internet addresses.
+
+4. **Zero-Trust Ingress Security Profile**
+   Apply a strict security layer blocking all generic traffic from probing the private network. This forces an ironclad boundary allowing only authorized Google Global Load Balancer health checkers to touch internal applications on standard web ports.
+
+```bash
+# COMMAND GROUP 01: Set active project context safely
+gcloud config set project project-c1a05de0-ba4b-4764-93a
+
+# COMMAND GROUP 02: Create the global custom-subnet mode corporate network
+gcloud compute networks create enterprise-global-vpc --subnet-mode=custom --bgp-routing-mode=global
+
+# COMMAND GROUP 03: Provision regional subnets with Private Google Access enabled
+# Deploy Primary Subnet (Region 1 - US Central)
+gcloud compute networks subnets create prod-central-app-subnet --network=enterprise-global-vpc --region=us-central1 --range=10.10.10.0/24 --enable-private-ip-google-access
+
+# Deploy Failover Subnet (Region 2 - US East)
+gcloud compute networks subnets create prod-east-app-subnet --network=enterprise-global-vpc --region=us-east4 --range=10.20.10.0/24 --enable-private-ip-google-access
+
+# COMMAND GROUP 04: Isolate application traffic to proxy health checks only
+gcloud compute firewall-rules create allow-glb-health-checks --network=enterprise-global-vpc --allow=tcp:80,tcp:443 --source-ranges=35.191.0.0/16,130.211.0.0/22 --description="Isolate application traffic to proxy health checks only"
+```
+
+### Raw Thread Command Output Log:
+```text
+NAME: allow-glb-health-checks
+NETWORK: enterprise-global-vpc
+DIRECTION: INGRESS
+PRIORITY: 1000
+ALLOW: tcp:80,tcp:443
+DENY: 
+DISABLED: False
+```
