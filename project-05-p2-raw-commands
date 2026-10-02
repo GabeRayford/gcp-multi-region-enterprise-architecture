@@ -1,0 +1,104 @@
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ export MY_PROJ="project-c1a05de0-ba4b-4764-93a"
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute health-checks create http regional-http-health-check --port=80 --request-path=
+ERROR: (gcloud.compute.health-checks.create.http) Could not fetch resource:
+ - Invalid value for field 'resource.httpHealthCheck.requestPath': ''. Request path cannot be empty or just whitespace.
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute health-checks create http regional-http-health-check --port=80 --request-path=/ --check-interval=5s --timeout=5s --healthy-threshold=2 --unhealthy-threshold=3 --project=$MY_PROJ
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/global/healthChecks/regional-http-health-check].
+NAME: regional-http-health-check
+PROTOCOL: HTTP
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create central-app-template --network=enterprise-global-vpc --subnet=prod-central-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-11 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Primary Region: US-CENTRAL</h1>' | sudo tee /var/www/html/index.html" --project=$MY_PROJ
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+Did you mean region [us-central1] for subnetwork: [prod-central-app-subnet] (Y/n)?  Y
+
+ERROR: (gcloud.compute.instance-templates.create) Could not fetch image resource:
+ - The resource 'projects/debian-cloud/global/images/family/debian-11' was not found
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create central-app-template --network=enterprise-global-vpc --subnet=prod-central-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Primary Region: US-CENTRAL</h1>' | sudo tee /var/www/html/index.html" --project=$MY_PROJ
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+Did you mean region [us-central1] for subnetwork: [prod-central-app-subnet] (Y/n)?  y
+
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/global/instanceTemplates/central-app-template].
+NAME: central-app-template
+MACHINE_TYPE: n1-standard-1
+PREEMPTIBLE: 
+CREATION_TIMESTAMP: 2026-10-02T14:55:02.740-07:00
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create east-app-template --network=enterprise-global-vpc --subnet=prod-east-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Failover Region: US-EAST</h1>' | sudo tee /var/www/html/index.html" --project=$MY_PROJ
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+Did you mean region [us-central1] for subnetwork: [prod-east-app-subnet] (Y/n)?  y
+
+ERROR: (gcloud.compute.instance-templates.create) Could not fetch resource:
+ - The resource 'projects/project-c1a05de0-ba4b-4764-93a/regions/us-central1/subnetworks/prod-east-app-subnet' was not found
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute health-checks create http regional-http-health-check --port=80 --request-path=/ --check-interval=5s --timeout=5s --healthy-threshold=2 --unhealthy-threshold=3 --project=project-c1a05de0-ba4b-4764-93a
+ERROR: (gcloud.compute.health-checks.create.http) Could not fetch resource:
+ - The resource 'projects/project-c1a05de0-ba4b-4764-93a/global/healthChecks/regional-http-health-check' already exists
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create central-app-template --network=enterprise-global-vpc --subnet=prod-central-app-subnet --subnet-region=us-central1 --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Primary Region: US-CENTRAL</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+ERROR: (gcloud.compute.instance-templates.create) unrecognized arguments:
+  
+ --subnet-region flag is available in one or more alternate release tracks. Try:
+
+  gcloud alpha compute instance-templates create --subnet-region
+
+  --subnet-region=us-central1 (did you mean '--subnet'?)
+  To search the help text of gcloud commands, run:
+  gcloud help -- SEARCH_TERMS
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create central-app-template --network=enterprise-global-vpc --subnet=projects/project-c1a05de0-ba4b-4764-93a/regions/us-central1/subnetworks/prod-central-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Primary Region: US-CENTRAL</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+ERROR: (gcloud.compute.instance-templates.create) Could not fetch resource:
+ - The resource 'projects/project-c1a05de0-ba4b-4764-93a/global/instanceTemplates/central-app-template' already exists
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create east-app-template --network=enterprise-global-vpc --subnet=projects/project-c1a05de0-ba4b-4764-93a/regions/us-east4/subnetworks/prod-east-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Failover Region: US-EAST</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/global/instanceTemplates/east-app-template].
+NAME: east-app-template
+MACHINE_TYPE: n1-standard-1
+PREEMPTIBLE: 
+CREATION_TIMESTAMP: 2026-10-02T14:57:19.107-07:00
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-templates create east-app-template --network=enterprise-global-vpc --subnet=projects/project-c1a05de0-ba4b-4764-93a/regions/us-east4/subnetworks/prod-east-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Failover Region: US-EAST</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+WARNING: You have selected a disk size of under [200GB]. This may result in poor I/O performance. For more information, see: https://developers.google.com/compute/docs/disks#performance.
+ERROR: (gcloud.compute.instance-templates.create) Could not fetch resource:
+ - The resource 'projects/project-c1a05de0-ba4b-4764-93a/global/instanceTemplates/east-app-template' already exists
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-groups managed create central-mig --template=central-app-template --size=2 --zones=us-central1-a,us-central1-b --health-check=regional-http-health-check --project=project-c1a05de0-ba4b-4764-93a
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/regions/us-central1/instanceGroupManagers/central-mig].
+NAME: central-mig
+LOCATION: us-central1
+SCOPE: region
+BASE_INSTANCE_NAME: central-mig
+SIZE: 0
+TARGET_SIZE: 2
+INSTANCE_TEMPLATE: central-app-template
+AUTOSCALED: no
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute instance-groups managed create east-mig --template=east-app-template --size=2 --zones=us-east4-a,us-east4-b --health-check=regional-http-health-check --project=project-c1a05de0-ba4b-4764-93a
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/regions/us-east4/instanceGroupManagers/east-mig].
+NAME: east-mig
+LOCATION: us-east4
+SCOPE: region
+BASE_INSTANCE_NAME: east-mig
+SIZE: 0
+TARGET_SIZE: 2
+INSTANCE_TEMPLATE: east-app-template
+AUTOSCALED: no
