@@ -2,8 +2,9 @@ Phase 1: Core Global Network Foundations
 📋 Real-World Operational Scenario
 • The Business Challenge: An enterprise financial technology platform requires a highly resilient, zero-trust network infrastructure capable of sustaining a total regional data center blackout without dropping customer transactions. To prevent lateral movement and data exfiltration, corporate compliance mandates that all internal application tiers must be completely isolated from direct internet exposure, while still allowing secure egress for software dependency updates.
 • The Technical Resolution: Initialized a custom-mode global VPC network matrix traversing decoupled subnets across us-central1 and us-east4 to eliminate default automated range pooling. Enforced the isolation of the internal application workloads by enabling Private Google Access across all regional subnets. Applied a zero-trust ingress security profile utilizing a strict firewall layout that blocks all public traffic, explicitly restricting network access to authorized Google Global Load Balancer health checkers.
+
+
 ⚡ Flattened One-Liner Execution Commands
-bash
 # 1. Establish project environment target context safely
 export MY_PROJ="project-c1a05de0-ba4b-4764-93a"
 
