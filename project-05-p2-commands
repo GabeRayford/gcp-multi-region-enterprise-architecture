@@ -1,0 +1,14 @@
+# COMMAND GROUP 01-05: Execute deployment commands for health checks, instance templates, and MIGs
+gcloud compute health-checks create http regional-http-health-check --port=80 --request-path=/ --check-interval=5s --timeout=5s --healthy-threshold=2 --unhealthy-threshold=3 --project=project-c1a05de0-ba4b-4764-93a
+
+gcloud compute instance-templates create central-app-template --network=enterprise-global-vpc --subnet=projects/project-c1a05de0-ba4b-4764-93a/regions/us-central1/subnetworks/prod-central-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Primary Region: US-CENTRAL</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+
+gcloud compute instance-templates create east-app-template --network=enterprise-global-vpc --subnet=projects/project-c1a05de0-ba4b-4764-93a/regions/us-east4/subnetworks/prod-east-app-subnet --no-address --tags=allow-glb-health-checks --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB --metadata=startup-script="#! /bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2
+echo '<h1>Welcome to Failover Region: US-EAST</h1>' | sudo tee /var/www/html/index.html" --project=project-c1a05de0-ba4b-4764-93a
+
+gcloud compute instance-groups managed create central-mig --template=central-app-template --size=2 --zones=us-central1-a,us-central1-b --health-check=regional-http-health-check --project=project-c1a05de0-ba4b-4764-93a
