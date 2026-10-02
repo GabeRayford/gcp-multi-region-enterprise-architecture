@@ -1,1 +1,47 @@
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ # Create the global custom-subnet mode corporate network
+gcloud compute networks create enterprise-global-vpc --subnet-mode=custom --bgp-routing-mode=global
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/global/networks/enterprise-global-vpc].
+NAME: enterprise-global-vpc
+SUBNET_MODE: CUSTOM
+BGP_ROUTING_MODE: GLOBAL
+IPV4_RANGE: 
+GATEWAY_IPV4: 
+INTERNAL_IPV6_RANGE: 
 
+Instances on this network will not be reachable until firewall rules
+are created. As an example, you can allow all internal traffic between
+instances as well as SSH, RDP, and ICMP by running:
+
+$ gcloud compute firewall-rules create <FIREWALL_NAME> --network enterprise-global-vpc --allow tcp,udp,icmp --source-ranges <IP_RANGE>
+$ gcloud compute firewall-rules create <FIREWALL_NAME> --network enterprise-global-vpc --allow tcp:22,tcp:3389,icmp
+
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute networks subnets create prod-central-app-subnet --network=enterprise-global-vpc --region=us-central1 --range=10.10.10.0/24 --enable-private-ip-google-access
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/regions/us-central1/subnetworks/prod-central-app-subnet].
+NAME: prod-central-app-subnet
+REGION: us-central1
+NETWORK: enterprise-global-vpc
+RANGE: 10.10.10.0/24
+STACK_TYPE: IPV4_ONLY
+IPV6_ACCESS_TYPE: 
+INTERNAL_IPV6_PREFIX: 
+EXTERNAL_IPV6_PREFIX: 
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute networks subnets create prod-east-app-subnet --network=enterprise-global-vpc --region=us-east4 --range=10.20.10.0/24 --enable-private-ip-google-access
+Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/regions/us-east4/subnetworks/prod-east-app-subnet].
+NAME: prod-east-app-subnet
+REGION: us-east4
+NETWORK: enterprise-global-vpc
+RANGE: 10.20.10.0/24
+STACK_TYPE: IPV4_ONLY
+IPV6_ACCESS_TYPE: 
+INTERNAL_IPV6_PREFIX: 
+EXTERNAL_IPV6_PREFIX: 
+g_rayford2121@cloudshell:~ (project-c1a05de0-ba4b-4764-93a)$ gcloud compute firewall-rules create allow-glb-health-checks --network=enterprise-global-vpc --allow=tcp:80,tcp:443 --source-ranges=35.191.0.0/16,130.211.0.0/22 --description="Isolate application traffic to proxy health checks only"
+Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/project-c1a05de0-ba4b-4764-93a/global/firewalls/allow-glb-health-checks].                         
+Creating firewall...done.                                                                                                                                                              
+NAME: allow-glb-health-checks
+NETWORK: enterprise-global-vpc
+DIRECTION: INGRESS
+PRIORITY: 1000
+ALLOW: tcp:80,tcp:443
+DENY: 
+DISABLED: False
